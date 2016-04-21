@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF8">
+<html>
+<head>
+  <title>Streaming page</title>
+  <script>
+    var id = Math.floor(Math.random() * 10000);
+    var socket = new WebSocket("ws://" + location.host + "/ws?id=" + id);
+
+    socket.onopen = function () {
+      alert("Connection established with id=" + id);
+    };
+
+    socket.onclose = function (event) {
+      if (event.wasClean) {
+        alert('Disconected');
+      } else {
+        alert('Lost connection');
+      }
+    };
+
+    socket.onmessage = function (event) {
+      document.getElementById('screen').setAttribute('src', event.data);
+    };
+
+    socket.onerror = function (error) {
+      alert("Error " + error.message);
+    };
+  </script>
+</head>
+<body>
+
+<img id="screen"/>
+
+</body>
+</html>
