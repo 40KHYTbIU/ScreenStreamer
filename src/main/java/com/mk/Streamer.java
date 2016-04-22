@@ -47,6 +47,10 @@ public class Streamer {
         it.remove();
       }
     }
+
+    if (_broadcast.isEmpty()){
+      LOGGER.info("No more clients.");
+    }
   }
 
   public void run() {
@@ -66,7 +70,7 @@ public class Streamer {
         }
       }
     } catch (Exception ex) {
-      LOGGER.error("Error there...", ex);
+      LOGGER.error("Error here...", ex);
     }
   }
 

@@ -16,18 +16,18 @@ public class WebSocketServlet extends org.eclipse.jetty.websocket.WebSocketServl
 
             @Override
             public void onMessage(String data) {
-                LOGGER.debug(id + " message > " + data);
+                LOGGER.debug("From {} got message: {}", id, data);
             }
 
             @Override
             public void onOpen(WebSocket.Connection connection) {
                 Streamer.getInstatnce().addConnection(connection);
-                LOGGER.debug(id + " open");
+                LOGGER.debug("New connection with id: {}", id);
             }
 
             @Override
             public void onClose(int closeCode, String message) {
-                LOGGER.debug(id + " close");
+                LOGGER.debug("Close connection for {}", id);
             }
         };
     }

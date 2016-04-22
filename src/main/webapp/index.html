@@ -4,6 +4,9 @@
 <head>
   <title>Streaming page</title>
   <script>
+    function updateImg(src) {
+      document.getElementById('screen').setAttribute('src', src);
+    }
     var id = Math.floor(Math.random() * 10000);
     var socket = new WebSocket("ws://" + location.host + "/ws?id=" + id);
 
@@ -20,7 +23,7 @@
     };
 
     socket.onmessage = function (event) {
-      document.getElementById('screen').setAttribute('src', event.data);
+      window.setTimeout(updateImg(event.data), 2000);
     };
 
     socket.onerror = function (error) {
