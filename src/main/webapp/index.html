@@ -3,37 +3,83 @@
 <html>
 <head>
   <title>Streaming page</title>
-  <script>
-    function updateImg(src) {
-      document.getElementById('screen').setAttribute('src', src);
+  <style>
+    #fps {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      font-size: 14px;
+      color: white;
+      background-color: black;
+      z-index: 1000;
     }
-    var id = Math.floor(Math.random() * 10000);
-    var socket = new WebSocket("ws://" + location.host + "/ws?id=" + id);
 
-    socket.onopen = function () {
-      alert("Connection established with id=" + id);
-    };
+    #container {
+      padding: 4px;
+      margin: auto;
+      border: solid black 1px;
+      display: inline-block;
+    }
 
-    socket.onclose = function (event) {
-      if (event.wasClean) {
-        alert('Disconected');
-      } else {
-        alert('Lost connection');
+    #screen {
+      height: 100%;
+      min-height: 100%;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+      var id = Math.floor(Math.random() * 10000);
+      var socket = new WebSocket("ws://" + location.host + "/ws?id=" + id);
+      var fps = 0;
+      var fpsElement = document.getElementById('fps');
+      var elementScreen = document.getElementById('screen');
+
+      function updateImg(src) {
+        elementScreen.setAttribute('src', src);
       }
-    };
 
-    socket.onmessage = function (event) {
-      window.setTimeout(updateImg(event.data), 2000);
-    };
+      function updateFps() {
+        var currFPS = fps;
+        fps = 0;
+        fpsElement.innerHTML ='FPS: ' + currFPS;
+      }
 
-    socket.onerror = function (error) {
-      alert("Error " + error.message);
-    };
+      socket.onopen = function () {
+        alert("Connection established with id=" + id);
+      };
+
+      socket.onclose = function (event) {
+        if (event.wasClean) {
+          alert('Disconected');
+        } else {
+          alert('Lost connection');
+        }
+      };
+
+      socket.onmessage = function (event) {
+        //Increment
+        fps++;
+        updateImg(event.data);
+//        setTimeout(updateImg(event.data), 2000);
+      };
+
+      socket.onerror = function (error) {
+        alert("Error " + error.message);
+      };
+
+      var run = setInterval(updateFps, 1000);
+
+    });
   </script>
 </head>
 <body>
 
-<img id="screen"/>
+<div id="container">
+  <span id="fps">FPS:0</span>
+  <img id="screen"/>
+</div>
+
 
 </body>
 </html>
