@@ -13,7 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.*;
 
 public class Streamer {
   static final Logger LOGGER = LoggerFactory.getLogger(Streamer.class);
@@ -30,6 +30,9 @@ public class Streamer {
 
   private ConcurrentLinkedQueue<WebSocket.Connection> _broadcast = new ConcurrentLinkedQueue<>();
 
+  final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(10);
+  final ExecutorService executorService = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, queue);
+
   public void addConnection(WebSocket.Connection connection) {
     _broadcast.add(connection);
   }
@@ -39,10 +42,16 @@ public class Streamer {
     while (it.hasNext()) {
       WebSocket.Connection connection = it.next();
       try {
-        connection.sendMessage(msg);
-      } catch (IOException e) {
-        LOGGER.error("Error send msg", e);
-        it.remove();
+        executorService.execute(() -> {
+          try {
+            connection.sendMessage(msg);
+          } catch (IOException e) {
+            LOGGER.error("Error send msg", e);
+            it.remove();
+          }
+        });
+      } catch (RejectedExecutionException e) {
+        LOGGER.debug("Skip a little...");
       }
     }
 
@@ -70,14 +79,8 @@ public class Streamer {
           String base64bytes = Base64.getEncoder().encodeToString(bytes);
           String src = "data:image/jpg;base64," + base64bytes;
 
-          Thread sender = new Thread() {
-            @Override
-            public void run() {
-              //And it's slow
-              sendToAll(src);
-            }
-          };
-          sender.start();
+          //It's a problem method
+          sendToAll(src);
         }
       }
     } catch (Exception ex) {
